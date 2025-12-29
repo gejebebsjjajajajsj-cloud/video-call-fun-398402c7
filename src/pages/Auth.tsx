@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,22 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
+
+  useEffect(() => {
+    // Criar admin automaticamente ao carregar a página
+    const createAdminIfNeeded = async () => {
+      setCreatingAdmin(true);
+      try {
+        await supabase.functions.invoke('create-admin');
+      } catch (error) {
+        console.log('Admin já existe ou erro ao criar');
+      }
+      setCreatingAdmin(false);
+    };
+
+    createAdminIfNeeded();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +64,11 @@ const Auth = () => {
           <CardDescription>Entre com suas credenciais para gerenciar o sistema</CardDescription>
         </CardHeader>
         <CardContent>
+          {creatingAdmin && (
+            <p className="text-sm text-muted-foreground mb-4 text-center">
+              Preparando sistema...
+            </p>
+          )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
