@@ -15,7 +15,12 @@ const Admin = () => {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [currentConfig, setCurrentConfig] = useState<{ video_url: string | null; audio_url: string | null } | null>(null);
+  const [currentConfig, setCurrentConfig] = useState<{
+    video_url: string | null;
+    audio_url: string | null;
+    duration_seconds: number | null;
+  } | null>(null);
+  const [durationMinutes, setDurationMinutes] = useState<number | "">("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,12 +47,13 @@ const Admin = () => {
   const loadCurrentConfig = async () => {
     const { data, error } = await supabase
       .from("call_config")
-      .select("video_url, audio_url")
+      .select("video_url, audio_url, duration_seconds")
       .eq("id", "00000000-0000-0000-0000-000000000000")
       .single();
 
     if (!error && data) {
       setCurrentConfig(data);
+      setDurationMinutes(data.duration_seconds ? Math.round(data.duration_seconds / 60) : "");
     }
   };
 
@@ -64,6 +70,10 @@ const Admin = () => {
     try {
       let videoUrl = currentConfig?.video_url || null;
       let audioUrl = currentConfig?.audio_url || null;
+      const durationSeconds =
+        typeof durationMinutes === "number" && durationMinutes > 0
+          ? durationMinutes * 60
+          : null;
 
       // Upload do vídeo
       if (videoFile) {
@@ -100,7 +110,7 @@ const Admin = () => {
       // Atualizar configuração no banco
       const { error: updateError } = await supabase
         .from("call_config")
-        .update({ video_url: videoUrl, audio_url: audioUrl })
+        .update({ video_url: videoUrl, audio_url: audioUrl, duration_seconds: durationSeconds })
         .eq("id", "00000000-0000-0000-0000-000000000000");
 
       if (updateError) throw updateError;
@@ -184,7 +194,31 @@ const Admin = () => {
                 )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading || (!videoFile && !audioFile)}>
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duração da chamada (minutos)</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  min={1}
+                  max={120}
+                  value={durationMinutes}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "") {
+                      setDurationMinutes("");
+                    } else {
+                      const parsed = parseInt(value, 10);
+                      setDurationMinutes(Number.isNaN(parsed) ? "" : parsed);
+                    }
+                  }}
+                  placeholder="Ex: 3"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Defina por quantos minutos a chamada ficará ativa antes de encerrar automaticamente.
+                </p>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={loading || (!videoFile && !audioFile && !durationMinutes)}>
                 <Upload className="mr-2 h-4 w-4" />
                 {loading ? "Salvando..." : "Salvar Configurações"}
               </Button>

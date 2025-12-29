@@ -17,6 +17,7 @@ export type Database = {
       call_config: {
         Row: {
           audio_url: string | null
+          duration_seconds: number | null
           id: string
           updated_at: string | null
           updated_by: string | null
@@ -24,6 +25,7 @@ export type Database = {
         }
         Insert: {
           audio_url?: string | null
+          duration_seconds?: number | null
           id?: string
           updated_at?: string | null
           updated_by?: string | null
@@ -31,6 +33,7 @@ export type Database = {
         }
         Update: {
           audio_url?: string | null
+          duration_seconds?: number | null
           id?: string
           updated_at?: string | null
           updated_by?: string | null

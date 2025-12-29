@@ -21,6 +21,7 @@ const Index = () => {
   const [permissionError, setPermissionError] = useState<string | null>(null);
   const [configVideoUrl, setConfigVideoUrl] = useState<string | null>(null);
   const [configAudioUrl, setConfigAudioUrl] = useState<string | null>(null);
+  const [durationLimitSeconds, setDurationLimitSeconds] = useState<number | null>(null);
 
   const selfVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -53,17 +54,18 @@ const Index = () => {
       document.head.appendChild(link);
     }
 
-    // Buscar configuração de vídeo e áudio do banco
+    // Buscar configuração de vídeo, áudio e duração do banco
     const loadConfig = async () => {
       const { data } = await supabase
         .from("call_config")
-        .select("video_url, audio_url")
+        .select("video_url, audio_url, duration_seconds")
         .eq("id", "00000000-0000-0000-0000-000000000000")
         .single();
 
       if (data) {
         setConfigVideoUrl(data.video_url);
         setConfigAudioUrl(data.audio_url);
+        setDurationLimitSeconds(data.duration_seconds ?? null);
       }
     };
 
@@ -73,11 +75,13 @@ const Index = () => {
   useEffect(() => {
     if (!inCall) return;
 
+    const effectiveLimitSeconds = durationLimitSeconds ?? CALL_DURATION_LIMIT_MINUTES * 60;
+
     timerRef.current = window.setInterval(() => {
       setDuration((prev) => {
-        if (prev >= CALL_DURATION_LIMIT_MINUTES * 60) {
+        if (prev + 1 >= effectiveLimitSeconds) {
           endCall("Tempo máximo de chamada atingido.");
-          return prev;
+          return prev + 1;
         }
         return prev + 1;
       });
@@ -90,7 +94,7 @@ const Index = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inCall]);
+  }, [inCall, durationLimitSeconds]);
 
   const requestMedia = async () => {
     try {
