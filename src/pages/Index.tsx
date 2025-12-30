@@ -90,7 +90,8 @@ const Index = () => {
     timerRef.current = window.setInterval(() => {
       setDuration((prev) => {
         if (prev + 1 >= effectiveLimitSeconds) {
-          endCall("Tempo máximo de chamada atingido.");
+          // Encerra a chamada silenciosamente quando o tempo máximo é atingido
+          endCall();
           return prev + 1;
         }
         return prev + 1;
@@ -236,70 +237,80 @@ const Index = () => {
     return `${mins}:${secs}`;
   };
 
-  const showCallLayout = inCall;
-
   return (
     <div className="min-h-screen bg-[hsl(var(--call-surface))] text-foreground relative overflow-hidden">
-      <main className="relative h-screen w-screen">
-        {/* Vídeo remoto ocupando a tela inteira (respeita vídeo em pé) */}
-        <video
-          ref={remoteVideoRef}
-          className="absolute inset-0 h-full w-full object-contain bg-black"
-          src={configVideoUrl || remoteVideoSrc}
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
+      <main className="relative h-screen w-screen flex items-center justify-center">
+        {inCall ? (
+          <>
+            {/* Vídeo remoto ocupando a tela inteira (respeita vídeo em pé) */}
+            <video
+              ref={remoteVideoRef}
+              className="absolute inset-0 h-full w-full object-contain bg-black"
+              src={configVideoUrl || remoteVideoSrc}
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
 
-        {/* Áudio da modelo tocando junto com o vídeo */}
-        {configAudioUrl && (
-          <audio ref={remoteAudioRef} src={configAudioUrl} loop />
-        )}
+            {/* Áudio da modelo tocando junto com o vídeo */}
+            {configAudioUrl && <audio ref={remoteAudioRef} src={configAudioUrl} loop />}
 
-        {/* Webcam do cliente no topo direito */}
-        <div className="pointer-events-none absolute right-3 top-3 h-32 w-24 overflow-hidden rounded-2xl border border-[hsl(var(--call-surface-soft))] bg-[hsl(var(--call-surface-soft))] shadow-[0_10px_28px_hsl(210_80%_2%/0.85)] sm:right-5 sm:top-5 sm:h-40 sm:w-32">
-          <video
-            ref={selfVideoRef}
-            className="h-full w-full object-cover"
-            autoPlay
-            playsInline
-            muted
-          />
-        </div>
+            {/* Webcam do cliente no topo direito */}
+            <div className="pointer-events-none absolute right-3 top-3 h-32 w-24 overflow-hidden rounded-2xl border border-[hsl(var(--call-surface-soft))] bg-[hsl(var(--call-surface-soft))] shadow-[0_10px_28px_hsl(210_80%_2%/0.85)] sm:right-5 sm:top-5 sm:h-40 sm:w-32">
+              <video
+                ref={selfVideoRef}
+                className="h-full w-full object-cover"
+                autoPlay
+                playsInline
+                muted
+              />
+            </div>
 
-        {/* Gradiente inferior para destacar controles */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[hsl(var(--call-surface)/0.96)] via-[hsl(var(--call-surface)/0.7)] to-transparent" />
+            {/* Gradiente inferior para destacar controles */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[hsl(var(--call-surface)/0.96)] via-[hsl(var(--call-surface)/0.7)] to-transparent" />
 
-        {/* Controles de chamada */}
-        <div className="absolute inset-x-0 bottom-6 z-20 flex justify-center">
-          <div className="flex items-center gap-3 rounded-full bg-[hsl(var(--call-surface-soft)/0.92)] px-4 py-2 shadow-[0_18px_40px_hsl(210_80%_2%/0.95)] backdrop-blur-md">
-            <Button
-              size="icon"
-              variant="call"
-              aria-label={mediaState.micOn ? "Desativar microfone" : "Ativar microfone"}
-              onClick={toggleMic}
-            >
-              {mediaState.micOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-            </Button>
-            <Button
-              size="icon"
-              variant="call"
-              aria-label={mediaState.camOn ? "Desativar câmera" : "Ativar câmera"}
-              onClick={toggleCam}
-            >
-              {mediaState.camOn ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
-            </Button>
-            <Button
-              size="icon"
-              variant="call-danger"
-              aria-label="Encerrar chamada"
-              onClick={() => endCall("Você encerrou a chamada.")}
-            >
-              <PhoneOff className="h-4 w-4" />
-            </Button>
+            {/* Controles de chamada */}
+            <div className="absolute inset-x-0 bottom-6 z-20 flex justify-center">
+              <div className="flex items-center gap-3 rounded-full bg-[hsl(var(--call-surface-soft)/0.92)] px-4 py-2 shadow-[0_18px_40px_hsl(210_80%_2%/0.95)] backdrop-blur-md">
+                <Button
+                  size="icon"
+                  variant="call"
+                  aria-label={mediaState.micOn ? "Desativar microfone" : "Ativar microfone"}
+                  onClick={toggleMic}
+                >
+                  {mediaState.micOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="call"
+                  aria-label={mediaState.camOn ? "Desativar câmera" : "Ativar câmera"}
+                  onClick={toggleCam}
+                >
+                  {mediaState.camOn ? <Camera className="h-4 w-4" /> : <CameraOff className="h-4 w-4" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="call-danger"
+                  aria-label="Encerrar chamada"
+                  onClick={() => endCall("Você encerrou a chamada.")}
+                >
+                  <PhoneOff className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          // Tela de chamada encerrada (sem notificações)
+          <div className="flex flex-col items-center justify-center gap-4 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[hsl(var(--call-surface-soft))] shadow-[0_18px_40px_hsl(210_80%_2%/0.95)]">
+              <PhoneOff className="h-8 w-8 text-[hsl(var(--destructive))]" />
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xs">
+              Chamada encerrada.
+            </p>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
