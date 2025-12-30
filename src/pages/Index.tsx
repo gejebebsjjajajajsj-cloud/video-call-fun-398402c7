@@ -239,25 +239,25 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-[hsl(var(--call-surface))] text-foreground relative overflow-hidden">
-      <main className="relative h-screen w-screen flex items-center justify-center">
+      <main className="fixed inset-0 flex items-center justify-center overflow-hidden">
         {inCall ? (
           <>
             {/* Vídeo remoto ocupando a tela inteira (respeita vídeo em pé) */}
             <video
-               ref={remoteVideoRef}
-               className="absolute inset-0 h-full w-full object-cover bg-black"
-               src={configVideoUrl || remoteVideoSrc}
-               autoPlay
-               loop
-               muted
-               playsInline
-             />
+              ref={remoteVideoRef}
+              className="absolute inset-0 h-full w-full object-cover bg-black"
+              src={configVideoUrl || remoteVideoSrc}
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
 
             {/* Áudio da modelo tocando junto com o vídeo */}
             {configAudioUrl && <audio ref={remoteAudioRef} src={configAudioUrl} loop />}
 
             {/* Webcam do cliente no topo direito */}
-            <div className="pointer-events-none absolute right-3 top-3 h-32 w-24 overflow-hidden rounded-2xl border border-[hsl(var(--call-surface-soft))] bg-[hsl(var(--call-surface-soft))] shadow-[0_10px_28px_hsl(210_80%_2%/0.85)] sm:right-5 sm:top-5 sm:h-40 sm:w-32">
+            <div className="pointer-events-none absolute right-3 top-3 z-20 h-32 w-24 overflow-hidden rounded-2xl border border-[hsl(var(--call-surface-soft))] bg-[hsl(var(--call-surface-soft))] shadow-[0_10px_28px_hsl(210_80%_2%/0.85)] sm:right-5 sm:top-5 sm:h-40 sm:w-32">
               <video
                 ref={selfVideoRef}
                 className="h-full w-full object-cover"
@@ -268,10 +268,10 @@ const Index = () => {
             </div>
 
             {/* Gradiente inferior para destacar controles */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[hsl(var(--call-surface)/0.96)] via-[hsl(var(--call-surface)/0.7)] to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[hsl(var(--call-surface)/0.96)] via-[hsl(var(--call-surface)/0.7)] to-transparent" />
 
             {/* Controles de chamada */}
-            <div className="absolute inset-x-0 bottom-6 z-20 flex justify-center">
+            <div className="absolute inset-x-0 bottom-4 z-30 flex justify-center pb-2">
               <div className="flex items-center gap-3 rounded-full bg-[hsl(var(--call-surface-soft)/0.92)] px-4 py-2 shadow-[0_18px_40px_hsl(210_80%_2%/0.95)] backdrop-blur-md">
                 <Button
                   size="icon"
@@ -300,9 +300,7 @@ const Index = () => {
               </div>
             </div>
           </>
-        ) : (
-          null
-        )}
+        ) : null}
       </main>
     </div>
   );
