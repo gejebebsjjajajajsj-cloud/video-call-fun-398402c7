@@ -154,14 +154,31 @@ const Admin = () => {
 
       // Atualizar configuração no banco para este site/domínio
       const host = window.location.host;
-      const { error: updateError } = await supabase
-        .from("call_config")
-        .upsert(
-          { site_id: host, video_url: videoUrl, audio_url: audioUrl },
-          { onConflict: "site_id" },
-        );
 
-      if (updateError) throw updateError;
+      // Verifica se já existe configuração para este site
+      const { data: existingConfig, error: fetchError } = await supabase
+        .from("call_config")
+        .select("id")
+        .eq("site_id", host)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
+      let dbError;
+      if (existingConfig) {
+        // Atualiza o registro existente
+        const { error } = await supabase
+          .from("call_config")
+          .update({ video_url: videoUrl, audio_url: audioUrl })
+          .eq("site_id", host);
+        dbError = error;
+      } else {
+        // Cria um novo registro para este site
+        const { error } = await supabase.from("call_config").insert({ site_id: host, video_url: videoUrl, audio_url: audioUrl });
+        dbError = error;
+      }
+
+      if (dbError) throw dbError;
 
       toast({
         title: "Configuração salva!",
@@ -319,27 +336,40 @@ const Admin = () => {
                 Gerar link de chamada
               </Button>
               {generatorUrl && (
-                <div className="space-y-2">
-                  <Label>Link gerado</Label>
-                  <div className="flex gap-2">
-                    <Input readOnly value={generatorUrl} className="text-xs" />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="outline"
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(generatorUrl);
-                        toast({
-                          title: "Copiado",
-                          description: "Link copiado para a área de transferência.",
-                        });
-                      }}
-                    >
-                      <ClipboardCopy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+                 <div className="space-y-2">
+                   <Label>Link gerado</Label>
+                   <div className="flex gap-2">
+                     <Input readOnly value={generatorUrl} className="text-xs" />
+                     <Button
+                       type="button"
+                       size="icon"
+                       variant="outline"
+                       onClick={async () => {
+                         try {
+                           await navigator.clipboard.writeText(generatorUrl);
+                           toast({
+                             title: "Copiado",
+                             description: "Link copiado para a área de transferência.",
+                           });
+                         } catch {
+                           const input = document.createElement("input");
+                           input.value = generatorUrl;
+                           document.body.appendChild(input);
+                           input.select();
+                           document.execCommand("copy");
+                           document.body.removeChild(input);
+                           toast({
+                             title: "Copiado",
+                             description: "Link copiado para a área de transferência.",
+                           });
+                         }
+                       }}
+                     >
+                       <ClipboardCopy className="h-4 w-4" />
+                     </Button>
+                   </div>
+                 </div>
+               )}
             </div>
 
             <div className="space-y-3 border-t border-border pt-4">
@@ -382,27 +412,40 @@ const Admin = () => {
                 </Button>
               </div>
               {trialUrl && (
-                <div className="space-y-2">
-                  <Label>Link de verificação</Label>
-                  <div className="flex gap-2">
-                    <Input readOnly value={trialUrl} className="text-xs" />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="outline"
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(trialUrl);
-                        toast({
-                          title: "Copiado",
-                          description: "Link de verificação copiado.",
-                        });
-                      }}
-                    >
-                      <ClipboardCopy className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+                 <div className="space-y-2">
+                   <Label>Link de verificação</Label>
+                   <div className="flex gap-2">
+                     <Input readOnly value={trialUrl} className="text-xs" />
+                     <Button
+                       type="button"
+                       size="icon"
+                       variant="outline"
+                       onClick={async () => {
+                         try {
+                           await navigator.clipboard.writeText(trialUrl);
+                           toast({
+                             title: "Copiado",
+                             description: "Link de verificação copiado.",
+                           });
+                         } catch {
+                           const input = document.createElement("input");
+                           input.value = trialUrl;
+                           document.body.appendChild(input);
+                           input.select();
+                           document.execCommand("copy");
+                           document.body.removeChild(input);
+                           toast({
+                             title: "Copiado",
+                             description: "Link de verificação copiado.",
+                           });
+                         }
+                       }}
+                     >
+                       <ClipboardCopy className="h-4 w-4" />
+                     </Button>
+                   </div>
+                 </div>
+               )}
             </div>
           </CardContent>
         </Card>

@@ -71,16 +71,15 @@ const Auth = () => {
           )}
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="alta@admin.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+               <Label htmlFor="email">Email</Label>
+               <Input
+                 id="email"
+                 type="email"
+                 value={email}
+                 onChange={(e) => setEmail(e.target.value)}
+                 required
+               />
+             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <Input
