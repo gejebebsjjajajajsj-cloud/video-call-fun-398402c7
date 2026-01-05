@@ -23,6 +23,7 @@ const Index = () => {
   const [configAudioUrl, setConfigAudioUrl] = useState<string | null>(null);
   const [durationLimitSeconds, setDurationLimitSeconds] = useState<number | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [hasCallParam, setHasCallParam] = useState(false);
 
   const selfVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -57,6 +58,7 @@ const Index = () => {
 
     const params = new URLSearchParams(window.location.search);
     const callIdFromUrl = params.get("call");
+    setHasCallParam(!!callIdFromUrl);
 
     const init = async () => {
       let effectiveDuration: number | null = null;
@@ -79,6 +81,11 @@ const Index = () => {
         }
 
         effectiveDuration = data.duration_seconds;
+      }
+
+      // Se não houver parâmetro de chamada, não inicia chamada automática
+      if (!callIdFromUrl) {
+        return;
       }
 
       const host = window.location.host;
@@ -250,6 +257,20 @@ const Index = () => {
           <p className="font-semibold">Link de chamada inválido</p>
           <p className="text-sm text-muted-foreground">
             Este link já foi utilizado ou não é mais válido. Peça um novo link para a modelo.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!hasCallParam) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--call-surface))] text-foreground">
+        <Card className="p-6 max-w-md text-center space-y-3">
+          <p className="font-semibold text-lg">Chamada não encontrada</p>
+          <p className="text-sm text-muted-foreground">
+            Este endereço não contém uma chamada ativa. Para entrar em uma chamada, use o link exclusivo
+            enviado pela modelo.
           </p>
         </Card>
       </div>
